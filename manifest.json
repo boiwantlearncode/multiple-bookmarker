@@ -1,0 +1,29 @@
+{
+
+  "manifest_version": 2,
+  "name": "Multiple Bookmarker",
+  "version": "1.0.1",
+
+  "description": "Allows you to bookmark multiple tabs at once.",
+
+  "icons": {
+    "48": "icons/bookmark-48.png"
+  },
+
+  "background": {
+    "scripts": ["popup.js"],
+    "persistent": false
+  },  
+
+  "browser_action": {
+    "default_icon": "icons/bookmark-48.png",
+    "default_title": "Bookmark Tabs",
+    "default_popup": "popup/popup.html"
+  },
+
+  "permissions": [
+    "bookmarks",
+    "tabs",
+    "scripting"
+  ]
+}
