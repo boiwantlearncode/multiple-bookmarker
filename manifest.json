@@ -1,7 +1,7 @@
 {
 
   "manifest_version": 2,
-  "name": "Multiple Bookmarker",
+  "name": "Multiple Bookmarker", 
   "version": "1.0.1",
 
   "description": "Allows you to bookmark multiple tabs at once.",
