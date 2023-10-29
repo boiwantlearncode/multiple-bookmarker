@@ -15,6 +15,7 @@ Workflow:
 Submission:
 (1) Update manifest.json version
 (2) Zip the 4 files & folders inside main directory, not the directory itself
+
 */
 
 var highlightedURLs = [];
