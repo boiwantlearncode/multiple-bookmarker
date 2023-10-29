@@ -47,6 +47,10 @@ p:hover {
     color: #c7c7c7;
 }
 
+p.already-bookmarked {
+    color: rgb(137, 209, 30);
+}
+
 img {
     width: 22.5px;
     height: 17.5px;

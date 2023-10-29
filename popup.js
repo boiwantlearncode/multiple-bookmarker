@@ -1,5 +1,21 @@
+/*
+
+DEVELOPER REFERENCE
+- bookmarkFolders: BookmarkTreeNodeType[]
+    - relevant properties
+        - id
+        - type
+        - title
+        - url (only if not folder)
+
+Workflow:
+(1) about:debugging
+(2) To view logs, click 'inspect' beside the extension
+*/
+
 var highlightedURLs = [];
 var bookmarkFolders = [];
+var activeTabURL = "";
 
 function getHighlightedTabs(tabs) {
     for (const tab of tabs) {
@@ -17,20 +33,32 @@ async function getBookmarkFolders() {
     }, onError);
 }
 
+async function getChildrenBookmarks(folderId) {
+    var array;
+
+    await browser.bookmarks.getChildren(folderId).then(result => {
+        array = result.filter(node => (node.type == "bookmark"));
+    }, onError);
+
+    return array
+}
+
+function isUrlInArrayOfBookmarks(url, folder) {
+    return folder.some(bookmark => bookmark.url == url)
+}
+
 async function createBookmark(evt) {
     parentId = evt.currentTarget.id;
     var childrenBookmarks;
 
     console.log(parentId);
-    await browser.bookmarks.getChildren(parentId).then(result => {
-        childrenBookmarks = result.filter(node => (node.type == "bookmark"));
-    }, onError);
-    console.log(childrenBookmarks);
 
+    // Gets children of folder that is a bookmark
+    childrenBookmarks = await getChildrenBookmarks(parentId);
 
     for (let i = 0; i < highlightedURLs.length; i++) {
         // Checks for duplicate and will continue to next element
-        duplicateExists = childrenBookmarks.some(bookmark => bookmark.url == highlightedURLs[i].url);
+        duplicateExists = isUrlInArrayOfBookmarks(highlightedURLs[i].url, childrenBookmarks)
         if (duplicateExists) {
             console.log("There is a duplicate.");
             continue
@@ -55,14 +83,30 @@ async function main() {
     
     // DOM
     var body = document.querySelector("body");
+    var childrenBookmarks;
 
     for (let i = 0; i < bookmarkFolders.length; i++) {
+        // Gets active tab URL
+        await browser.tabs.query({currentWindow: true, active: true}).then((tabs) => {
+            activeTabURL = tabs[0].url;
+        }, console.error);
+        console.log(`Active tab url: ${activeTabURL}`);
+
+        // Gets children of folder that is a bookmark
+        childrenBookmarks = await getChildrenBookmarks(bookmarkFolders[i].id);
+
         body.innerHTML += `
             <div class='row' id='${bookmarkFolders[i].id}'>
                 <img src="/icons/folder.svg"/>
-                <p>${bookmarkFolders[i].title}</p>
+                <p title='${bookmarkFolders[i].title}' class='${
+                    isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
+                    'already-bookmarked' : ''
+                }'>
+                    ${bookmarkFolders[i].title}
+                </p>
             </div>
         `;
+
         folder = document.querySelector('#' + CSS.escape(bookmarkFolders[i].id));
         folder.id = bookmarkFolders[i].id;
     }
