@@ -11,6 +11,10 @@ DEVELOPER REFERENCE
 Workflow:
 (1) about:debugging
 (2) To view logs, click 'inspect' beside the extension
+
+Submission:
+(1) Update manifest.json version
+(2) Zip the 4 files & folders inside main directory, not the directory itself
 */
 
 var highlightedURLs = [];
