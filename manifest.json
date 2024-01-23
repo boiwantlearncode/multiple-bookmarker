@@ -24,6 +24,7 @@
   "permissions": [
     "bookmarks",
     "tabs",
-    "scripting"
+    "scripting",
+    "storage"
   ]
 }
