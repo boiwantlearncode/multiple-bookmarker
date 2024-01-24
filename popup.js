@@ -31,13 +31,10 @@ var activeTabURL = "";
 var searchValue;
 
 async function renderSearch(e) {
-    // console.log("Input!")
-
     var search = {
         name: "search",
         value: e.target.value
     };
-    await browser.storage.local.set({ search });
 
     console.log("renderSearch function called.")
     await getBookmarkFolders(e.target.value);
@@ -73,33 +70,27 @@ async function renderSearch(e) {
         // Gets children of folder that is a bookmark
         childrenBookmarks = await getChildrenBookmarks(bookmarkFolders[i].id);
 
-        body.innerHTML += `
-            <div class='row' id='${bookmarkFolders[i].id}'>
-                <img src="/icons/folder.svg"/>
-                <p title='${bookmarkFolders[i].title}' class='${
-                    isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
-                    'already-bookmarked' : ''
-                }'>
-                    ${bookmarkFolders[i].title}
-                </p>
-            </div>
-        `;
+        body.insertAdjacentHTML(
+            "beforeend",
+            `
+                <div class='row' id='${bookmarkFolders[i].id}'>
+                    <img src="/icons/folder.svg"/>
+                    <p title='${bookmarkFolders[i].title}' class='${
+                        isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
+                        'already-bookmarked' : ''
+                    }'>
+                        ${bookmarkFolders[i].title}
+                    </p>
+                </div>
+            `
+        );
 
         folder = document.querySelector('#' + CSS.escape(bookmarkFolders[i].id));
         folder.id = bookmarkFolders[i].id;
     }
 
-    // ! Have to reimplement event listener as innerHTML removes existing event listeners under the affected element or its descendents
     document.querySelector("#searchbar").addEventListener("input", renderSearch);
     document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark))
-
-    browser.storage.local.get("search").then((item) => {
-        console.log(item.search.value)
-        searchValue = item.search.value;
-        document.querySelector("#searchbar").value = searchValue;
-        document.querySelector("#searchbar").focus();
-    }, onError);
-
     
 }
 
@@ -181,17 +172,20 @@ async function main() {
         // Gets children of folder that is a bookmark
         childrenBookmarks = await getChildrenBookmarks(bookmarkFolders[i].id);
 
-        body.innerHTML += `
-            <div class='row' id='${bookmarkFolders[i].id}'>
-                <img src="/icons/folder.svg"/>
-                <p title='${bookmarkFolders[i].title}' class='${
-                    isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
-                    'already-bookmarked' : ''
-                }'>
-                    ${bookmarkFolders[i].title}
-                </p>
-            </div>
-        `;
+        body.insertAdjacentHTML(
+            "beforeend",
+            `
+                <div class='row' id='${bookmarkFolders[i].id}'>
+                    <img src="/icons/folder.svg"/>
+                    <p title='${bookmarkFolders[i].title}' class='${
+                        isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
+                        'already-bookmarked' : ''
+                    }'>
+                        ${bookmarkFolders[i].title}
+                    </p>
+                </div>
+            `
+        );
 
         folder = document.querySelector('#' + CSS.escape(bookmarkFolders[i].id));
         folder.id = bookmarkFolders[i].id;
