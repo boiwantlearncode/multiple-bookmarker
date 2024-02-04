@@ -21,11 +21,12 @@ Submission:
 window.onload = function() {
     setTimeout(() => {
         document.querySelector("#searchbar").addEventListener("input", renderSearch);
+        document.querySelector("#searchbar").addEventListener("keydown", preventResetTextCursor);
         document.querySelector("#searchbar").focus();
     }, 150);
 };
 
-window.addEventListener("keydown", async (e) => {
+window.addEventListener("keydown", (e) => {
     switch (e.key) {
         case "Enter":
             console.log("Enter");
@@ -48,6 +49,17 @@ var activeTabURL = "";
 var searchValue;
 var selectedFolder;
 var selectedFolderIndex = 0;
+
+function preventResetTextCursor(e) {
+    switch (e.key) {
+        case "ArrowUp":
+            e.preventDefault();
+            break;
+        case "ArrowDown":
+            e.preventDefault();
+            break;
+    }
+}
 
 function moveSelected(direction) {
     // Get bookmarkFolders displayed. Get current selectedFolder index.
@@ -137,7 +149,10 @@ async function renderSearch(e) {
     // document.querySelector("#searchbar").addEventListener("input", renderSearch);
     document.querySelectorAll('.row').forEach((folder, index) => {
         // For KEYPRESS = ENTER
-        if (index == 0) selectedFolder = folder;
+        if (index == 0) {
+            selectedFolder = folder;
+            selectedFolderIndex = 0;
+        }
         folder.addEventListener('click', evtCreateBookmark)
     });
     moveSelected("RESET");
@@ -253,7 +268,10 @@ async function main() {
     // document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', evtCreateBookmark));
     document.querySelectorAll('.row').forEach((folder, index) => {
         // For KEYPRESS = ENTER
-        if (index == 0) selectedFolder = folder;
+        if (index == 0) {
+            selectedFolder = folder;
+            selectedFolderIndex = 0;
+        }
         folder.addEventListener('click', evtCreateBookmark)
     });
 }
