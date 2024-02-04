@@ -25,37 +25,19 @@ window.onload = function() {
     }, 150);
 };
 
-window.addEventListener("keypress", async (e) => {
+window.addEventListener("keydown", async (e) => {
     switch (e.key) {
         case "Enter":
-            console.log("Entered");
-            console.log(selectedFolder);
-
-
-            parentId = selectedFolder.id;
-            var childrenBookmarks;
-        
-            console.log(parentId);
-        
-            // Gets children of folder that is a bookmark
-            childrenBookmarks = await getChildrenBookmarks(parentId);
-        
-            for (let i = 0; i < highlightedURLs.length; i++) {
-                // Checks for duplicate and will continue to next element
-                duplicateExists = isUrlInArrayOfBookmarks(highlightedURLs[i].url, childrenBookmarks)
-                if (duplicateExists) {
-                    console.log("There is a duplicate.");
-                    continue
-                }
-        
-                // Bookmark creation
-                browser.bookmarks.create({
-                    title: highlightedURLs[i].title,
-                    url: highlightedURLs[i].url,
-                    parentId: parentId
-                });
-                console.log("Bookmarked!");
-            }
+            console.log("Enter");
+            createBookmark(selectedFolder);
+            break;
+        case "ArrowUp":
+            moveSelected("UP");
+            console.log("Arrow up");
+            break;
+        case "ArrowDown":
+            moveSelected("DOWN");
+            console.log("Arrow down");
             break;
     }
 });
@@ -65,6 +47,32 @@ var bookmarkFolders = [];
 var activeTabURL = "";
 var searchValue;
 var selectedFolder;
+var selectedFolderIndex = 0;
+
+function moveSelected(direction) {
+    // Get bookmarkFolders displayed. Get current selectedFolder index.
+    var DOMfolders = document.querySelectorAll('.row');
+    switch (direction) {
+        case "UP":
+            if (selectedFolderIndex > 0) {
+                DOMfolders[selectedFolderIndex].classList.remove("selected");
+                DOMfolders[--selectedFolderIndex].classList.add("selected");
+            }
+            break;
+        case "DOWN":
+            if (selectedFolderIndex < DOMfolders.length - 1) {
+                DOMfolders[selectedFolderIndex].classList.remove("selected");
+                DOMfolders[++selectedFolderIndex].classList.add("selected");
+            }
+            break;
+        case "RESET":
+            DOMfolders[selectedFolderIndex].classList.remove("selected");
+            DOMfolders[0].classList.add("selected");
+            selectedFolderIndex = 0;
+            break;
+    }
+    selectedFolder = DOMfolders[selectedFolderIndex];
+}
 
 async function renderSearch(e) {
     var search = {
@@ -93,10 +101,6 @@ async function renderSearch(e) {
         body.removeChild(body.firstChild);
     }
 
-    // console.log(body.childNodes);
-    // console.log(bookmarkFolders);
-
-    selectedFolder = bookmarkFolders[0];
     
     for (let i = 0; i < bookmarkFolders.length; i++) {
         // Gets active tab URL
@@ -104,14 +108,17 @@ async function renderSearch(e) {
             activeTabURL = tabs[0].url;
         }, console.error);
         console.log(`Active tab url: ${activeTabURL}`);
-
+        
         // Gets children of folder that is a bookmark
         childrenBookmarks = await getChildrenBookmarks(bookmarkFolders[i].id);
-
+        
         body.insertAdjacentHTML(
             "beforeend",
             `
-                <div class='row' id='${bookmarkFolders[i].id}'>
+                <div class='row ${
+                    selectedFolderIndex == i ?
+                    'selected' : ''
+                }' id='${bookmarkFolders[i].id}'>
                     <img src="/icons/folder.svg"/>
                     <p title='${bookmarkFolders[i].title}' class='${
                         isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
@@ -122,13 +129,18 @@ async function renderSearch(e) {
                 </div>
             `
         );
-
+        
         folder = document.querySelector('#' + CSS.escape(bookmarkFolders[i].id));
         folder.id = bookmarkFolders[i].id;
     }
-
+    
     // document.querySelector("#searchbar").addEventListener("input", renderSearch);
-    document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark));
+    document.querySelectorAll('.row').forEach((folder, index) => {
+        // For KEYPRESS = ENTER
+        if (index == 0) selectedFolder = folder;
+        folder.addEventListener('click', evtCreateBookmark)
+    });
+    moveSelected("RESET");
     
 }
 
@@ -163,12 +175,15 @@ function isUrlInArrayOfBookmarks(url, folder) {
     return folder.some(bookmark => bookmark.url == url)
 }
 
-async function createBookmark(evt) {
-    parentId = evt.currentTarget.id;
+async function evtCreateBookmark(evt) {
+    createBookmark(evt.currentTarget)
+}
+
+async function createBookmark(selectedFolder) {
+    parentId = selectedFolder.id;
+    selectedFolder.querySelector('p').classList.add("already-bookmarked");
     var childrenBookmarks;
     console.log("createBookmark called");
-
-    // console.log(parentId);
 
     // Gets children of folder that is a bookmark
     childrenBookmarks = await getChildrenBookmarks(parentId);
@@ -202,8 +217,6 @@ async function main() {
     var body = document.querySelector("body");
     var childrenBookmarks;
 
-    selectedFolder = bookmarkFolders[0];
-
     for (let i = 0; i < bookmarkFolders.length; i++) {
         // Gets active tab URL
         await browser.tabs.query({currentWindow: true, active: true}).then((tabs) => {
@@ -217,7 +230,10 @@ async function main() {
         body.insertAdjacentHTML(
             "beforeend",
             `
-                <div class='row' id='${bookmarkFolders[i].id}'>
+                <div class='row ${
+                    selectedFolderIndex == i ?
+                    'selected' : ''
+                }' id='${bookmarkFolders[i].id}'>
                     <img src="/icons/folder.svg"/>
                     <p title='${bookmarkFolders[i].title}' class='${
                         isUrlInArrayOfBookmarks(activeTabURL, childrenBookmarks) ?
@@ -234,7 +250,12 @@ async function main() {
     }
     console.log("Main called");
 
-    document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark));
+    // document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', evtCreateBookmark));
+    document.querySelectorAll('.row').forEach((folder, index) => {
+        // For KEYPRESS = ENTER
+        if (index == 0) selectedFolder = folder;
+        folder.addEventListener('click', evtCreateBookmark)
+    });
 }
 
 main();

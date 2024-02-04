@@ -79,11 +79,19 @@ img {
     color: greenyellow;
 }
 
-.row:first-of-type {
+/* .row:first-of-type {
     background-color: #303030;
 }
 
 .row:first-of-type p {
+    font-weight: bold;
+} */
+
+.row.selected {
+    background-color: #303030;
+}
+
+.row.selected p {
     font-weight: bold;
 }
 
