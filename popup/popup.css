@@ -80,12 +80,12 @@ img {
 }
 
 .row:first-of-type {
-    /* background-color: #303030; */
+    background-color: #303030;
 }
 
-/* .row:first-of-type p {
+.row:first-of-type p {
     font-weight: bold;
-} */
+}
 
 .row:last-of-type {
     margin-bottom: 10px;

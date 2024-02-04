@@ -25,10 +25,46 @@ window.onload = function() {
     }, 150);
 };
 
+window.addEventListener("keypress", async (e) => {
+    switch (e.key) {
+        case "Enter":
+            console.log("Entered");
+            console.log(selectedFolder);
+
+
+            parentId = selectedFolder.id;
+            var childrenBookmarks;
+        
+            console.log(parentId);
+        
+            // Gets children of folder that is a bookmark
+            childrenBookmarks = await getChildrenBookmarks(parentId);
+        
+            for (let i = 0; i < highlightedURLs.length; i++) {
+                // Checks for duplicate and will continue to next element
+                duplicateExists = isUrlInArrayOfBookmarks(highlightedURLs[i].url, childrenBookmarks)
+                if (duplicateExists) {
+                    console.log("There is a duplicate.");
+                    continue
+                }
+        
+                // Bookmark creation
+                browser.bookmarks.create({
+                    title: highlightedURLs[i].title,
+                    url: highlightedURLs[i].url,
+                    parentId: parentId
+                });
+                console.log("Bookmarked!");
+            }
+            break;
+    }
+});
+
 var highlightedURLs = [];
 var bookmarkFolders = [];
 var activeTabURL = "";
 var searchValue;
+var selectedFolder;
 
 async function renderSearch(e) {
     var search = {
@@ -57,8 +93,10 @@ async function renderSearch(e) {
         body.removeChild(body.firstChild);
     }
 
-    console.log(body.childNodes);
-    console.log(bookmarkFolders);
+    // console.log(body.childNodes);
+    // console.log(bookmarkFolders);
+
+    selectedFolder = bookmarkFolders[0];
     
     for (let i = 0; i < bookmarkFolders.length; i++) {
         // Gets active tab URL
@@ -89,12 +127,13 @@ async function renderSearch(e) {
         folder.id = bookmarkFolders[i].id;
     }
 
-    document.querySelector("#searchbar").addEventListener("input", renderSearch);
-    document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark))
+    // document.querySelector("#searchbar").addEventListener("input", renderSearch);
+    document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark));
     
 }
 
 function getHighlightedTabs(tabs) {
+    highlightedURLs = [];
     for (const tab of tabs) {
       highlightedURLs.push(tab);
     }
@@ -127,8 +166,9 @@ function isUrlInArrayOfBookmarks(url, folder) {
 async function createBookmark(evt) {
     parentId = evt.currentTarget.id;
     var childrenBookmarks;
+    console.log("createBookmark called");
 
-    console.log(parentId);
+    // console.log(parentId);
 
     // Gets children of folder that is a bookmark
     childrenBookmarks = await getChildrenBookmarks(parentId);
@@ -162,6 +202,8 @@ async function main() {
     var body = document.querySelector("body");
     var childrenBookmarks;
 
+    selectedFolder = bookmarkFolders[0];
+
     for (let i = 0; i < bookmarkFolders.length; i++) {
         // Gets active tab URL
         await browser.tabs.query({currentWindow: true, active: true}).then((tabs) => {
@@ -190,8 +232,9 @@ async function main() {
         folder = document.querySelector('#' + CSS.escape(bookmarkFolders[i].id));
         folder.id = bookmarkFolders[i].id;
     }
+    console.log("Main called");
 
-    document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark))
+    document.querySelectorAll('.row').forEach(folder => folder.addEventListener('click', createBookmark));
 }
 
 main();
